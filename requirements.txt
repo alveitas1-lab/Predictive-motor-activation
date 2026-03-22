@@ -1,0 +1,5 @@
+tensorflow-lite
+RPi.GPIO
+numpy
+pandas
+scikit-learn
