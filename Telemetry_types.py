@@ -1,10 +1,7 @@
 from dataclasses import dataclass
 from typing import Optional
 
-
-# =========================
-# TELEMETRY (RAW FROM READER)
-# =========================
+# Telemetry (Raw)
 
 @dataclass
 class TelemetrySample:
@@ -24,9 +21,7 @@ class TelemetrySample:
     raw_line: Optional[str] = None
 
 
-# =========================
-# DERIVED STATE (COMPUTED)
-# =========================
+# Derived State (Computed)
 
 @dataclass
 class DerivedState:
@@ -42,9 +37,7 @@ class DerivedState:
     avg_acceleration_ft_s2: float
 
 
-# =========================
-# CONTROL / DECISION OUTPUT
-# =========================
+# Control / Decision Output
 
 @dataclass
 class ControllerCommand:
@@ -56,9 +49,7 @@ class ControllerCommand:
     shutdown: bool = False
 
 
-# =========================
-# ACTUATOR STATUS
-# =========================
+# Stepper or Servo Motor State
 
 @dataclass
 class ActuatorStatus:
@@ -72,9 +63,7 @@ class ActuatorStatus:
     is_moving: bool = False
 
 
-# =========================
-# ADAPTER FROM ALTIMETER READER
-# =========================
+# Adapter from Altimeter Reader
 
 def telemetry_from_dict(state: dict) -> TelemetrySample:
     """
