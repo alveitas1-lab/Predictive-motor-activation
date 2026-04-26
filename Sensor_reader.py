@@ -142,19 +142,30 @@ class SensorReader:
 
     def _zero_altitude(self, samples: int = 20) -> None:
         """
-        Record the ground-level altitude baseline.
+        Record the ground-level altitude baseline at boot.
 
-        Reads the barometer multiple times and averages the result.
-        This average becomes our AGL zero reference for the entire flight.
+        Called once automatically during __init__. Reads the barometer
+        20 times and averages the result to establish the AGL zero
+        reference used for the entire flight.
 
         WHY AVERAGE?
           A single baro reading is noisy. Averaging 20 samples over
-          ~0.8 seconds gives a stable baseline. This is called on the
-          pad before flight — make sure the rocket is stationary and
-          the barometer has warmed up for at least 5 seconds first.
+          ~0.8 seconds gives a stable baseline.
 
-        Args:
-            samples: Number of readings to average. 20 is a good default.
+        WHY AT BOOT AND NOT AT LAUNCH?
+          The DPS310 measures atmospheric pressure — orientation has no
+          effect on its readings, so it does not matter that the rocket
+          may be horizontal or at an angle during setup. The altitude
+          change between power-on and liftoff is typically under 20 ft,
+          which is less than 0.2% of a 10,000 ft flight. Boot-time
+          zeroing is simpler and equally accurate for this application.
+
+        PRE-FLIGHT PROCEDURE:
+          Power on the system and wait at least 5 seconds before
+          moving the rocket. This gives the DPS310 time to thermally
+          stabilize and lets _zero_altitude() complete before the
+          main loop starts. After that, handle and transport the
+          rocket normally — no further zeroing action is needed.
         """
         readings = []
         for _ in range(samples):
@@ -178,15 +189,14 @@ class SensorReader:
         """
         Read both sensors and return a TelemetrySample.
 
-        This is called once per loop cycle in main.py.
-        If either sensor read fails, telemetry_valid is set to False
-        and the last known good values are used where possible.
-        The HistoryBuffer and downstream modules handle invalid samples
-        gracefully — they skip them for physics calculations but the
-        DataLogger still records them so you can see when failures occurred.
+        Called once per loop cycle in main.py. If either sensor read
+        fails, telemetry_valid is set to False and safe fallback values
+        are used. The HistoryBuffer skips invalid samples for physics
+        calculations, but DataLogger still records them so you can see
+        exactly when and how often sensor failures occurred.
 
         Returns:
-            A TelemetrySample with current sensor data.
+            A TelemetrySample with the latest sensor data.
         """
         now = time.monotonic()
         valid = True
