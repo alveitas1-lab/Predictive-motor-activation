@@ -58,11 +58,12 @@
 # Change this to match your competition or test flight target.
 TARGET_APOGEE_FT: float = 10000.0
 
-# Altitude AGL at the launch site in feet.
-# The DPS310 will be zeroed at startup, but this value is used
-# to sanity-check readings and for the ML model features.
-# If you are launching from a site above sea level, set this.
-LAUNCH_SITE_ALTITUDE_FT: float = 0.0
+# Ground reference note:
+# The DPS310 is zeroed at boot by averaging 20 pressure readings.
+# All altitude values throughout the program are AGL relative to
+# that boot-time baseline. No manual site altitude entry is needed —
+# just power on, let the sensor warm up for 5 seconds, and the
+# zero is set automatically before you walk to the pad.
 
 
 # -----------------------------------------------------------------------------
