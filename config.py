@@ -276,8 +276,9 @@ MODEL_IS_QUANTIZED: bool = False
 # The main control loop runs at this rate. Sensor reads, derived state,
 # prediction, and logging all happen once per loop iteration.
 # 50 Hz = 20ms per cycle, which is fast enough for this application.
-LOOP_RATE_HZ: int = 50
-LOOP_PERIOD_S: float = 1.0 / LOOP_RATE_HZ   # 0.02 s
+LOOP_RATE_HZ: int = 40
+LOOP_PERIOD_S: float = 1.0 / LOOP_RATE_HZ   # 0.025 s
+SD_FLUSH_INTERVAL_CYCLES: int = 10
 
 
 # -----------------------------------------------------------------------------
