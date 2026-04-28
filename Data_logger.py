@@ -114,6 +114,7 @@ class DataLogger:
             self._write_header()
 
         self._row_count: int = 0
+        self._unflushed_rows: int = 0
 
     # -------------------------------------------------------------------------
     # Public interface
@@ -186,24 +187,32 @@ class DataLogger:
         ]
 
         self._file.write(",".join(row) + "\n")
-
-        # Flush to disk every cycle.
-        # This ensures data survives a hard landing or power loss.
-        self._file.flush()
         self._row_count += 1
+        self._unflushed_rows += 1
+
+        # Flush to disk every SD_FLUSH_INTERVAL_CYCLES cycles rather than
+        # every single write. At 40 Hz this means ~250ms between flushes,
+        # saving ~12ms of blocking SD I/O per cycle on average.
+        # Worst case data loss on hard landing: one flush interval of rows.
+        if self._unflushed_rows >= config.SD_FLUSH_INTERVAL_CYCLES:
+            self._file.flush()
+            self._unflushed_rows = 0
 
     def close(self) -> None:
         """
-        Flush and close the log file cleanly.
+        Flush all buffered rows and close the log file cleanly.
 
         Called by main.py during the SAFE/shutdown phase.
+        Ensures any rows buffered since the last periodic flush are
+        written to disk before the file is closed.
         After this, no more rows can be written.
         """
         try:
-            self._file.flush()
+            self._file.flush()   # Write any buffered rows
             self._file.close()
+            self._unflushed_rows = 0
         except Exception:
-            pass   # Best effort — if close fails, the data is still flushed
+            pass   # Best effort — data already flushed periodically
 
     @property
     def row_count(self) -> int:
